@@ -1,0 +1,705 @@
+/* ==========================================
+   Cloud.css
+   SentinelCore SecureOps
+========================================== */
+
+:root{
+    --bg:#0f172a;
+    --card:#111827;
+    --card2:#1e293b;
+    --primary:#3b82f6;
+    --success:#22c55e;
+    --warning:#f59e0b;
+    --danger:#ef4444;
+    --azure:#0078D4;
+    --aws:#ff9900;
+    --gcp:#34A853;
+    --text:#f8fafc;
+    --muted:#94a3b8;
+    --border:rgba(255,255,255,.08);
+}
+
+.cloud-page{
+    min-height:100vh;
+    padding:30px;
+    background:linear-gradient(135deg,#020617,#0f172a,#111827);
+    color:var(--text);
+}
+
+/* ================= Header ================= */
+
+.page-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:20px;
+    margin-bottom:30px;
+}
+
+.page-header h1{
+    font-size:34px;
+    font-weight:700;
+}
+
+.page-header p{
+    color:var(--muted);
+    margin-top:6px;
+}
+
+.refresh-btn{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:12px 22px;
+    background:var(--primary);
+    color:white;
+    border:none;
+    border-radius:12px;
+    cursor:pointer;
+    transition:.3s;
+    font-weight:600;
+}
+
+.refresh-btn:hover{
+    transform:translateY(-3px);
+    box-shadow:0 10px 25px rgba(59,130,246,.4);
+}
+
+/* ================= Summary Cards ================= */
+
+.summary-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:20px;
+    margin-bottom:30px;
+}
+
+.summary-card{
+    background:rgba(17,24,39,.85);
+    backdrop-filter:blur(15px);
+    border:1px solid var(--border);
+    border-radius:18px;
+    padding:25px;
+    text-align:center;
+    transition:.3s;
+}
+
+.summary-card:hover{
+    transform:translateY(-8px);
+}
+
+.summary-card svg{
+    font-size:42px;
+    margin-bottom:15px;
+}
+
+.summary-card h2{
+    font-size:34px;
+    margin-bottom:10px;
+}
+
+.summary-card span{
+    color:var(--muted);
+}
+
+.summary-card.aws svg,
+.summary-card.aws h2{
+    color:var(--aws);
+}
+
+.summary-card.azure svg,
+.summary-card.azure h2{
+    color:var(--azure);
+}
+
+.summary-card.gcp svg,
+.summary-card.gcp h2{
+    color:var(--gcp);
+}
+
+.summary-card.total svg,
+.summary-card.total h2{
+    color:var(--primary);
+}
+
+/* ================= Toolbar ================= */
+
+.toolbar{
+    display:flex;
+    gap:20px;
+    flex-wrap:wrap;
+    margin-bottom:30px;
+}
+
+.search-box{
+    flex:1;
+    min-width:300px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    background:#1e293b;
+    border-radius:12px;
+    border:1px solid var(--border);
+    padding:12px 18px;
+}
+
+.search-box svg{
+    color:#94a3b8;
+}
+
+.search-box input{
+    flex:1;
+    background:none;
+    border:none;
+    outline:none;
+    color:white;
+}
+
+.toolbar select{
+    min-width:200px;
+    background:#1e293b;
+    border:1px solid var(--border);
+    color:white;
+    border-radius:12px;
+    padding:12px 18px;
+}
+
+/* ================= Charts ================= */
+
+.chart-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(400px,1fr));
+    gap:25px;
+    margin-bottom:30px;
+}
+
+.chart-card{
+    background:rgba(17,24,39,.85);
+    border:1px solid var(--border);
+    border-radius:18px;
+    backdrop-filter:blur(15px);
+    padding:25px;
+}
+
+.chart-card h3{
+    margin-bottom:20px;
+}
+/* ==========================================
+   Cloud Resource Table
+========================================== */
+
+.table-container{
+    background:rgba(17,24,39,.85);
+    backdrop-filter:blur(15px);
+    border:1px solid var(--border);
+    border-radius:18px;
+    overflow:hidden;
+    box-shadow:0 15px 35px rgba(0,0,0,.35);
+}
+
+.cloud-table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+.cloud-table thead{
+    background:#1e293b;
+}
+
+.cloud-table th{
+    padding:18px;
+    text-align:left;
+    color:#cbd5e1;
+    font-size:14px;
+    font-weight:600;
+    white-space:nowrap;
+}
+
+.cloud-table td{
+    padding:18px;
+    border-top:1px solid rgba(255,255,255,.05);
+    color:#e2e8f0;
+    transition:.3s;
+}
+
+.cloud-table tbody tr{
+    transition:.3s;
+}
+
+.cloud-table tbody tr:hover{
+    background:#1f2937;
+}
+
+/* ==========================================
+   Provider Icons
+========================================== */
+
+.cloud-table td svg{
+    margin-right:8px;
+    vertical-align:middle;
+    font-size:18px;
+}
+
+.provider-aws{
+    color:var(--aws);
+}
+
+.provider-azure{
+    color:var(--azure);
+}
+
+.provider-gcp{
+    color:var(--gcp);
+}
+
+/* ==========================================
+   Resource Metrics
+========================================== */
+
+.metric{
+    display:inline-block;
+    min-width:60px;
+    text-align:center;
+    padding:6px 12px;
+    border-radius:20px;
+    font-weight:600;
+    font-size:12px;
+}
+
+.metric.cpu{
+    background:rgba(59,130,246,.15);
+    color:#60a5fa;
+}
+
+.metric.memory{
+    background:rgba(139,92,246,.15);
+    color:#a78bfa;
+}
+
+.metric.disk{
+    background:rgba(245,158,11,.15);
+    color:#fbbf24;
+}
+
+/* ==========================================
+   Health Badges
+========================================== */
+
+.health{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:6px 14px;
+    border-radius:20px;
+    font-size:12px;
+    font-weight:700;
+}
+
+.health.healthy{
+    background:rgba(34,197,94,.15);
+    color:#22c55e;
+}
+
+.health.warning{
+    background:rgba(245,158,11,.15);
+    color:#f59e0b;
+}
+
+.health.critical{
+    background:rgba(239,68,68,.15);
+    color:#ef4444;
+}
+
+/* ==========================================
+   Kubernetes / Docker
+========================================== */
+
+.container-icons{
+    display:flex;
+    gap:12px;
+    justify-content:center;
+    align-items:center;
+}
+
+.k8s{
+    color:#326ce5;
+    font-size:22px;
+}
+
+.docker{
+    color:#2496ed;
+    font-size:22px;
+}
+
+/* ==========================================
+   Loading
+========================================== */
+
+.loading-container{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    min-height:300px;
+}
+
+.loader{
+    width:55px;
+    height:55px;
+    border:5px solid rgba(255,255,255,.15);
+    border-top:5px solid var(--primary);
+    border-radius:50%;
+    animation:spin 1s linear infinite;
+    margin-bottom:20px;
+}
+
+@keyframes spin{
+    to{
+        transform:rotate(360deg);
+    }
+}
+
+/* ==========================================
+   Error
+========================================== */
+
+.error-box{
+    background:rgba(239,68,68,.15);
+    color:#fecaca;
+    border:1px solid rgba(239,68,68,.3);
+    padding:18px;
+    border-radius:12px;
+    margin-bottom:20px;
+}
+
+/* ==========================================
+   Empty State
+========================================== */
+
+.empty-state{
+    text-align:center;
+    padding:80px 20px;
+}
+
+.empty-state svg{
+    color:#64748b;
+    margin-bottom:20px;
+}
+
+.empty-state h2{
+    font-size:30px;
+    margin-bottom:10px;
+}
+
+.empty-state p{
+    color:#94a3b8;
+}
+
+/* ==========================================
+   Pagination
+========================================== */
+
+.pagination{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:10px;
+    margin-top:35px;
+}
+
+.pagination button{
+    width:42px;
+    height:42px;
+    border:none;
+    border-radius:10px;
+    background:#1e293b;
+    color:#fff;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.pagination button:hover{
+    background:#334155;
+}
+
+.pagination button.active{
+    background:#3b82f6;
+}
+/* ==========================================
+   Custom Scrollbar
+========================================== */
+
+::-webkit-scrollbar{
+    width:8px;
+    height:8px;
+}
+
+::-webkit-scrollbar-track{
+    background:#0f172a;
+}
+
+::-webkit-scrollbar-thumb{
+    background:#334155;
+    border-radius:20px;
+}
+
+::-webkit-scrollbar-thumb:hover{
+    background:#3b82f6;
+}
+
+/* ==========================================
+   Card Hover Animation
+========================================== */
+
+@keyframes floatCard{
+
+    0%{
+        transform:translateY(0);
+    }
+
+    50%{
+        transform:translateY(-6px);
+    }
+
+    100%{
+        transform:translateY(0);
+    }
+
+}
+
+.summary-card:hover{
+
+    animation:floatCard .6s ease;
+
+}
+
+.chart-card{
+
+    transition:.35s;
+
+}
+
+.chart-card:hover{
+
+    transform:translateY(-6px);
+
+    box-shadow:0 18px 35px rgba(0,0,0,.35);
+
+}
+
+.table-container{
+
+    transition:.35s;
+
+}
+
+.table-container:hover{
+
+    box-shadow:0 18px 40px rgba(0,0,0,.45);
+
+}
+
+/* ==========================================
+   Utility Classes
+========================================== */
+
+.text-center{
+
+    text-align:center;
+
+}
+
+.mt-20{
+
+    margin-top:20px;
+
+}
+
+.mb-20{
+
+    margin-bottom:20px;
+
+}
+
+.flex-center{
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+}
+
+.w-100{
+
+    width:100%;
+
+}
+
+/* ==========================================
+   Responsive Design
+========================================== */
+
+@media (max-width:1200px){
+
+    .chart-grid{
+
+        grid-template-columns:1fr;
+
+    }
+
+}
+
+@media (max-width:992px){
+
+    .table-container{
+
+        overflow-x:auto;
+
+    }
+
+    .cloud-table{
+
+        min-width:1200px;
+
+    }
+
+}
+
+@media (max-width:768px){
+
+    .cloud-page{
+
+        padding:20px;
+
+    }
+
+    .page-header{
+
+        flex-direction:column;
+
+        align-items:flex-start;
+
+    }
+
+    .refresh-btn{
+
+        width:100%;
+
+        justify-content:center;
+
+    }
+
+    .summary-grid{
+
+        grid-template-columns:1fr;
+
+    }
+
+    .toolbar{
+
+        flex-direction:column;
+
+        gap:15px;
+
+    }
+
+    .search-box{
+
+        min-width:100%;
+
+    }
+
+    .toolbar select{
+
+        width:100%;
+
+    }
+
+    .chart-card{
+
+        padding:18px;
+
+    }
+
+}
+
+@media (max-width:480px){
+
+    .page-header h1{
+
+        font-size:28px;
+
+    }
+
+    .summary-card h2{
+
+        font-size:28px;
+
+    }
+
+    .summary-card svg{
+
+        font-size:34px;
+
+    }
+
+    .chart-card{
+
+        padding:15px;
+
+    }
+
+    .pagination{
+
+        flex-wrap:wrap;
+
+    }
+
+    .pagination button{
+
+        width:38px;
+
+        height:38px;
+
+    }
+
+}
+
+/* ==========================================
+   Print Support
+========================================== */
+
+@media print{
+
+    .refresh-btn,
+    .toolbar,
+    .pagination{
+
+        display:none;
+
+    }
+
+    .cloud-page{
+
+        background:#ffffff;
+
+        color:#000000;
+
+    }
+
+    .summary-card,
+    .chart-card,
+    .table-container{
+
+        box-shadow:none;
+
+        border:1px solid #ddd;
+
+        background:#ffffff;
+
+    }
+
+}

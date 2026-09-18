@@ -1,0 +1,510 @@
+/* ===========================
+   GLOBAL
+=========================== */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:"Poppins",sans-serif;
+}
+
+body{
+    background:#08111f;
+}
+
+/* ===========================
+   Animated Background
+=========================== */
+
+.auth-container{
+
+    min-height:100vh;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    position:relative;
+
+    overflow:hidden;
+
+    background:
+    linear-gradient(
+        135deg,
+        #071321,
+        #0d1b2a,
+        #102542,
+        #0b1f36
+    );
+
+    animation:bgAnimation 12s ease infinite;
+
+}
+
+@keyframes bgAnimation{
+
+0%{
+background-position:left;
+}
+
+50%{
+background-position:right;
+}
+
+100%{
+background-position:left;
+}
+
+}
+
+/* Floating circles */
+
+.auth-container::before{
+
+content:"";
+
+position:absolute;
+
+width:350px;
+
+height:350px;
+
+border-radius:50%;
+
+background:#3b82f655;
+
+top:-100px;
+
+left:-100px;
+
+filter:blur(90px);
+
+animation:float1 8s infinite alternate;
+
+}
+
+.auth-container::after{
+
+content:"";
+
+position:absolute;
+
+width:400px;
+
+height:400px;
+
+border-radius:50%;
+
+background:#22c55e44;
+
+bottom:-150px;
+
+right:-150px;
+
+filter:blur(120px);
+
+animation:float2 9s infinite alternate;
+
+}
+
+@keyframes float1{
+
+from{
+transform:translateY(0px);
+}
+
+to{
+transform:translateY(70px);
+}
+
+}
+
+@keyframes float2{
+
+from{
+transform:translateX(0px);
+}
+
+to{
+transform:translateX(-60px);
+}
+
+}
+
+/* ===========================
+   Card
+=========================== */
+
+.auth-card{
+
+position:relative;
+
+width:430px;
+
+padding:40px;
+
+border-radius:25px;
+
+background:rgba(255,255,255,.08);
+
+backdrop-filter:blur(18px);
+
+border:1px solid rgba(255,255,255,.15);
+
+box-shadow:
+
+0 20px 45px rgba(0,0,0,.45),
+
+0 0 30px rgba(59,130,246,.2);
+
+color:white;
+
+z-index:10;
+
+transition:.4s;
+
+}
+
+.auth-card:hover{
+
+transform:translateY(-6px);
+
+box-shadow:
+
+0 30px 60px rgba(0,0,0,.5),
+
+0 0 35px #3b82f6;
+
+}
+
+.register-card{
+
+width:520px;
+
+}
+
+/* ===========================
+   Logo
+=========================== */
+
+.logo{
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+gap:12px;
+
+margin-bottom:25px;
+
+}
+
+.logo svg{
+
+font-size:45px;
+
+color:#3b82f6;
+
+filter:drop-shadow(0 0 12px #3b82f6);
+
+}
+
+.logo h1{
+
+font-size:32px;
+
+font-weight:700;
+
+letter-spacing:1px;
+
+}
+
+.auth-card h2{
+
+text-align:center;
+
+margin-bottom:10px;
+
+font-size:28px;
+
+}
+
+.auth-card p{
+
+text-align:center;
+
+margin-bottom:25px;
+
+color:#cbd5e1;
+
+}
+
+/* ===========================
+   Form
+=========================== */
+
+form{
+
+display:flex;
+
+flex-direction:column;
+
+gap:18px;
+
+}
+
+input,
+select{
+
+width:100%;
+
+padding:14px 18px;
+
+border:none;
+
+border-radius:12px;
+
+background:rgba(255,255,255,.09);
+
+color:white;
+
+font-size:15px;
+
+transition:.3s;
+
+}
+
+input::placeholder{
+
+color:#b8c2d3;
+
+}
+
+select option{
+
+color:black;
+
+}
+
+input:focus,
+select:focus{
+
+border:1px solid #3b82f6;
+
+box-shadow:
+
+0 0 15px rgba(59,130,246,.4);
+
+background:rgba(255,255,255,.13);
+
+}
+
+/* ===========================
+   Password
+=========================== */
+
+.password-box{
+
+position:relative;
+
+}
+
+.password-box input{
+
+padding-right:55px;
+
+}
+
+.eye{
+
+position:absolute;
+
+right:15px;
+
+top:50%;
+
+transform:translateY(-50%);
+
+background:none;
+
+border:none;
+
+color:#cbd5e1;
+
+cursor:pointer;
+
+font-size:18px;
+
+transition:.3s;
+
+}
+
+.eye:hover{
+
+color:#3b82f6;
+
+transform:translateY(-50%) scale(1.15);
+
+}
+
+/* ===========================
+   Button
+=========================== */
+
+.login-btn{
+
+padding:15px;
+
+border:none;
+
+border-radius:12px;
+
+font-size:17px;
+
+font-weight:600;
+
+cursor:pointer;
+
+background:
+
+linear-gradient(
+90deg,
+#2563eb,
+#3b82f6,
+#60a5fa
+);
+
+color:white;
+
+transition:.35s;
+
+box-shadow:
+
+0 10px 25px rgba(37,99,235,.4);
+
+}
+
+.login-btn:hover{
+
+transform:translateY(-3px);
+
+box-shadow:
+
+0 15px 35px rgba(37,99,235,.55);
+
+}
+
+.login-btn:disabled{
+
+opacity:.6;
+
+cursor:not-allowed;
+
+}
+
+/* ===========================
+   Footer
+=========================== */
+
+.bottom-link{
+
+margin-top:25px;
+
+text-align:center;
+
+font-size:15px;
+
+color:#d5dbe7;
+
+}
+
+.bottom-link a{
+
+margin-left:6px;
+
+text-decoration:none;
+
+font-weight:600;
+
+color:#60a5fa;
+
+transition:.3s;
+
+}
+
+.bottom-link a:hover{
+
+color:white;
+
+}
+
+/* ===========================
+   Loader
+=========================== */
+
+.loader{
+
+width:50px;
+
+height:50px;
+
+border-radius:50%;
+
+border:5px solid rgba(255,255,255,.25);
+
+border-top:5px solid #3b82f6;
+
+animation:spin .9s linear infinite;
+
+margin:auto;
+
+}
+
+@keyframes spin{
+
+100%{
+
+transform:rotate(360deg);
+
+}
+
+}
+
+/* ===========================
+   Responsive
+=========================== */
+
+@media(max-width:768px){
+
+.auth-card{
+
+width:95%;
+
+padding:30px;
+
+}
+
+.register-card{
+
+width:95%;
+
+}
+
+.logo h1{
+
+font-size:26px;
+
+}
+
+.auth-card h2{
+
+font-size:24px;
+
+}
+
+}
