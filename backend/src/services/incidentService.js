@@ -1,5 +1,8 @@
 const Incident = require("../models/Incident");
-const { getIO } = require("../socket");
+const Asset = require("../models/Asset");
+const { emitToRoles } = require("../socket");
+const { escapeRegex } = require("../utils/escapeRegex");
+const { recalculateAssetRisk } = require("./riskService");
 
 async function getIncidents({ page = 1, limit = 20, status, severity, search }) {
   page = Math.max(1, parseInt(page, 10) || 1);
@@ -10,7 +13,8 @@ async function getIncidents({ page = 1, limit = 20, status, severity, search }) 
   if (severity && severity !== "ALL") query.severity = severity;
 
   if (search && search.trim() !== "") {
-    const regex = new RegExp(search.trim().replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&"), "i");
+    const escaped = escapeRegex(search.trim());
+    const regex = new RegExp(escaped, "i");
     query.$or = [{ title: regex }, { asset: regex }, { description: regex }, { assignedUser: regex }];
   }
 
@@ -58,22 +62,25 @@ async function createIncident(data, user) {
   }
 
   const newIncident = await Incident.create({
-    title: data.title,
-    description: data.description,
+    title: data.title.trim(),
+    description: data.description.trim(),
     severity: data.severity || "MEDIUM",
-    asset: data.asset || "Unspecified Asset",
+    asset: data.asset ? data.asset.trim() : "Unspecified Asset",
     assignedUser: data.assignedUser || user.username,
     status: data.status || "OPEN",
     resolutionNotes: data.resolutionNotes || "",
   });
 
-  try {
-    const io = getIO();
-    if (io) {
-      io.emit("incident:created", newIncident);
+  emitToRoles(["ADMIN", "ITSM"], "incident:created", newIncident);
+
+  // If incident belongs to a known asset, trigger risk recalculation
+  if (newIncident.asset) {
+    const matchedAsset = await Asset.findOne({
+      $or: [{ assetName: newIncident.asset }, { hostname: newIncident.asset }],
+    });
+    if (matchedAsset) {
+      await recalculateAssetRisk(matchedAsset._id);
     }
-  } catch (socketErr) {
-    console.warn("[incidentService] Failed to emit incident:created:", socketErr.message);
   }
 
   return newIncident;
@@ -103,6 +110,8 @@ async function updateIncident(id, data, user) {
     incident.status = data.status;
     if (data.status === "RESOLVED") {
       incident.resolvedAt = new Date();
+    } else {
+      incident.resolvedAt = null;
     }
   }
 
@@ -114,13 +123,16 @@ async function updateIncident(id, data, user) {
 
   const updatedIncident = await incident.save();
 
-  try {
-    const io = getIO();
-    if (io) {
-      io.emit("incident:updated", updatedIncident);
+  emitToRoles(["ADMIN", "ITSM"], "incident:updated", updatedIncident);
+
+  // Recalculate asset risk upon status changes (e.g., when mitigated or resolved)
+  if (updatedIncident.asset) {
+    const matchedAsset = await Asset.findOne({
+      $or: [{ assetName: updatedIncident.asset }, { hostname: updatedIncident.asset }],
+    });
+    if (matchedAsset) {
+      await recalculateAssetRisk(matchedAsset._id);
     }
-  } catch (socketErr) {
-    console.warn("[incidentService] Failed to emit incident:updated:", socketErr.message);
   }
 
   return updatedIncident;
@@ -140,7 +152,18 @@ async function deleteIncident(id, user) {
     throw err;
   }
 
+  const assetName = incident.asset;
   await incident.deleteOne();
+
+  if (assetName) {
+    const matchedAsset = await Asset.findOne({
+      $or: [{ assetName }, { hostname: assetName }],
+    });
+    if (matchedAsset) {
+      await recalculateAssetRisk(matchedAsset._id);
+    }
+  }
+
   return { message: "Incident deleted successfully" };
 }
 

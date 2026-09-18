@@ -1,4 +1,5 @@
 const os = require("os");
+const mongoose = require("mongoose");
 const Asset = require("../models/Asset");
 const User = require("../models/User");
 const Alert = require("../models/Alert");
@@ -10,7 +11,6 @@ const { calculateSecurityScore } = require("./riskService");
 
 async function getDashboardSummary() {
   const snapshot = await stats.getFullSnapshot();
-  const processCount = await stats.getProcessCount();
   const network = await stats.getNetworkUsage();
   const totalMemGB = Math.round(os.totalmem() / 1024 / 1024 / 1024);
 
@@ -22,9 +22,12 @@ async function getDashboardSummary() {
     openAlertsCount,
     openIncidentsCount,
     openVulnsCount,
+    openCriticalVulnsCount,
+    openHighIncidentsCount,
     healthyAssetsCount,
     warningAssetsCount,
     criticalAssetsCount,
+    offlineAssetsCount,
     recentAlerts,
     recentEvents,
     securityScore,
@@ -36,41 +39,88 @@ async function getDashboardSummary() {
     Alert.countDocuments({ status: { $ne: "RESOLVED" } }),
     Incident.countDocuments({ status: { $ne: "RESOLVED" } }),
     Vulnerability.countDocuments({ status: { $ne: "PATCHED" } }),
+    Vulnerability.countDocuments({ severity: "CRITICAL", status: { $ne: "PATCHED" } }),
+    Incident.countDocuments({ severity: { $in: ["HIGH", "CRITICAL"] }, status: { $ne: "RESOLVED" } }),
     Asset.countDocuments({ health: "Healthy" }),
     Asset.countDocuments({ health: "Warning" }),
     Asset.countDocuments({ health: "Critical" }),
+    Asset.countDocuments({
+      $or: [
+        { status: { $regex: /^inactive$/i } },
+        { status: { $regex: /^offline$/i } },
+      ],
+    }),
     Alert.find().sort({ createdAt: -1 }).limit(10),
     SecurityEvent.find().sort({ timestamp: -1 }).limit(8),
     calculateSecurityScore(),
   ]);
 
+  // Real database connection status (1 = connected, 0 = disconnected)
+  const isDbConnected = mongoose.connection.readyState === 1 ? 1 : 0;
+
+  // Real host uptime in seconds from OS
+  const hostUptimeSeconds = Math.floor(os.uptime());
+
+  // Data-driven dynamic recommendations based on real state
+  const recommendations = [];
+  if (openCriticalVulnsCount > 0) {
+    recommendations.push(
+      `Remediate ${openCriticalVulnsCount} Critical CVE(s) identified in Vulnerability Management.`
+    );
+  }
+  if (openHighIncidentsCount > 0) {
+    recommendations.push(
+      `Investigate ${openHighIncidentsCount} High/Critical security incident(s) requiring response.`
+    );
+  }
+  if (criticalAssetsCount > 0) {
+    recommendations.push(
+      `Address resource exhaustion on ${criticalAssetsCount} host(s) marked in Critical health state.`
+    );
+  }
+  if (offlineAssetsCount > 0) {
+    recommendations.push(
+      `Verify network reachability and agent connectivity for ${offlineAssetsCount} offline asset(s).`
+    );
+  }
+  if (recommendations.length === 0) {
+    recommendations.push(
+      "Infrastructure health is stable. Maintain periodic vulnerability scanning and log monitoring.",
+      "Review user privileges and ensure multi-factor authentication policies are applied.",
+      "Verify gateway firewall configurations and automated backup routines."
+    );
+  }
+
   return {
-    assets: assetCount || processCount,
+    // Genuine asset count: 0 assets must display 0, never process count
+    assets: assetCount,
     servers: serverCount,
-    endpoints: endpointCount || Math.max(0, assetCount - serverCount),
+    endpoints: endpointCount,
     users: userCount,
 
     alerts: openAlertsCount,
     incidents: openIncidentsCount,
     vulnerabilities: openVulnsCount,
     securityScore: securityScore,
+    securityScoreStatus: securityScore === null ? "UNAVAILABLE" : "CALCULATED",
 
     healthy: healthyAssetsCount,
     warning: warningAssetsCount,
     critical: criticalAssetsCount,
-    offline: 0,
+    offline: offlineAssetsCount,
 
     cpu: snapshot.cpuUsage,
     memory: snapshot.memoryUsage,
     disk: snapshot.diskUsage,
     network: snapshot.networkUsage,
     gpu: snapshot.gpuUsage || 0,
-    database: 1,
+    database: isDbConnected,
 
     upload: network.uploadMB,
     download: network.downloadMB,
 
-    uptime: 99.99,
+    // Real measured host uptime in seconds (frontend can format as days/hours)
+    uptime: hostUptimeSeconds,
 
     cloud: [
       `${snapshot.operatingSystem} ${snapshot.osVersion}`,
@@ -83,13 +133,7 @@ async function getDashboardSummary() {
       (e) => `[${e.severity}] ${e.asset}: ${e.description}`
     ),
 
-    recommendations: [
-      "Ensure all workstations have antivirus active.",
-      "Patch high & critical CVEs identified in Vulnerability Management.",
-      "Enforce strong authentication policies across all user accounts.",
-      "Review firewall rule exceptions on external gateway interfaces.",
-    ],
-
+    recommendations,
     alertList: recentAlerts,
   };
 }

@@ -2,9 +2,13 @@ const Asset = require("../models/Asset");
 const Incident = require("../models/Incident");
 const Vulnerability = require("../models/Vulnerability");
 const SecurityEvent = require("../models/SecurityEvent");
+const { emitToRoles } = require("../socket");
 
 /**
- * Calculates a dynamic Security Score (0 to 100) based on actual system state.
+ * Calculates a dynamic Global Security Score (0 to 100) based on actual system state.
+ * Global Security Score: HIGHER = BETTER security.
+ * Asset Risk Score: HIGHER = GREATER risk.
+ *
  * Formula:
  * Base = 100
  * - 10 per Critical Vulnerability (Open/Pending)
@@ -16,8 +20,6 @@ const SecurityEvent = require("../models/SecurityEvent");
  * Clamped strictly between 0 and 100.
  */
 async function calculateSecurityScore() {
-  let score = 100;
-
   try {
     const [
       criticalVulns,
@@ -41,6 +43,7 @@ async function calculateSecurityScore() {
       }),
     ]);
 
+    let score = 100;
     score -= criticalVulns * 10;
     score -= highVulns * 5;
     score -= openIncidents * 8;
@@ -50,9 +53,69 @@ async function calculateSecurityScore() {
 
     return Math.max(0, Math.min(100, Math.round(score)));
   } catch (error) {
-    console.error("Error calculating security score:", error);
-    return 100;
+    console.error("[riskService] Error calculating security score:", error);
+    // Explicit unavailable state — never fake 100% security on database/query failure
+    return null;
   }
 }
 
-module.exports = { calculateSecurityScore };
+/**
+ * Recalculates an individual Asset's dynamic Risk Score (0 to 100) from its CURRENT active state.
+ * Allows risk to decrease when vulnerabilities are patched or incidents resolved.
+ */
+async function recalculateAssetRisk(assetId) {
+  if (!assetId) return null;
+
+  try {
+    const asset = await Asset.findById(assetId);
+    if (!asset) return null;
+
+    const [vulnCounts, incidentCount] = await Promise.all([
+      Vulnerability.aggregate([
+        {
+          $match: {
+            $or: [{ assetId: asset._id }, { asset: asset.assetName }],
+            status: { $ne: "PATCHED" },
+          },
+        },
+        { $group: { _id: "$severity", count: { $sum: 1 } } },
+      ]),
+      Incident.countDocuments({
+        $or: [{ asset: asset.assetName }, { asset: asset.hostname }],
+        status: { $in: ["OPEN", "ASSIGNED", "INVESTIGATING"] },
+        severity: { $in: ["HIGH", "CRITICAL"] },
+      }),
+    ]);
+
+    const countMap = Object.fromEntries(vulnCounts.map((v) => [v._id, v.count]));
+    const critVulns = countMap.CRITICAL || 0;
+    const highVulns = countMap.HIGH || 0;
+    const medVulns = countMap.MEDIUM || 0;
+
+    let healthPenalty = 0;
+    if (asset.health?.toLowerCase() === "critical") healthPenalty = 30;
+    else if (asset.health?.toLowerCase() === "warning") healthPenalty = 15;
+
+    const computedRisk = Math.min(
+      100,
+      Math.max(
+        0,
+        healthPenalty + critVulns * 25 + highVulns * 15 + medVulns * 5 + incidentCount * 20
+      )
+    );
+
+    const totalOpenVulns = critVulns + highVulns + medVulns + (countMap.LOW || 0);
+    asset.vulnerabilityCount = totalOpenVulns;
+    asset.incidentCount = incidentCount;
+    asset.riskScore = computedRisk;
+    await asset.save();
+
+    emitToRoles(["ADMIN", "ITSM"], "asset:updated", asset);
+    return asset;
+  } catch (err) {
+    console.error(`[riskService] Error recalculating risk for asset ${assetId}:`, err);
+    return null;
+  }
+}
+
+module.exports = { calculateSecurityScore, recalculateAssetRisk };

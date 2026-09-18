@@ -12,7 +12,7 @@ function errorHandler(err, req, res, next) {
   console.error("MESSAGE:", err.message);
   console.error("========================================");
 
-  const status = err.status || 500;
+  const status = err.statusCode || err.status || 500;
 
   res.status(status).json({
     message: err.message || "Internal Server Error",

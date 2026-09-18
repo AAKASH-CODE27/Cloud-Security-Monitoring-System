@@ -1,11 +1,7 @@
 const Asset = require("../models/Asset");
 const stats = require("../utils/systemStats");
-const { getIO } = require("../socket");
-
-// Regex escaping helper to prevent regex injection attacks
-function escapeRegex(text) {
-  return String(text).replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
-}
+const { emitToRoles } = require("../socket");
+const { escapeRegex } = require("../utils/escapeRegex");
 
 async function getAssets({ page = 1, limit = 20, search = "", status, health, department, owner, assetType }) {
   page = Math.max(1, parseInt(page, 10) || 1);
@@ -66,12 +62,13 @@ async function getAssetById(id) {
 async function createAsset(body) {
   const snapshot = await stats.getFullSnapshot();
 
+  // Whitelist fields to prevent mass assignment
   const asset = new Asset({
-    assetName: body.assetName || snapshot.hostname,
-    description: body.description || "Monitored Asset",
+    assetName: (body.assetName || snapshot.hostname || "Workstation").trim(),
+    description: (body.description || "Monitored Asset").trim(),
     assetType: body.assetType || "Workstation",
-    assetTag: body.assetTag,
-    serialNumber: body.serialNumber,
+    assetTag: body.assetTag ? body.assetTag.trim() : undefined,
+    serialNumber: body.serialNumber ? body.serialNumber.trim() : undefined,
     manufacturer: body.manufacturer || "Generic",
     model: body.model || "Standard",
     deviceType: body.deviceType || "Desktop",
@@ -105,11 +102,11 @@ async function createAsset(body) {
     networkUsage: snapshot.networkUsage,
     gpuUsage: snapshot.gpuUsage,
 
-    health: snapshot.health,
+    health: snapshot.health || "Healthy",
     status: body.status || "ACTIVE",
-    riskScore: snapshot.riskScore,
+    riskScore: 0,
 
-    availability: 99.99,
+    availability: 100.0,
     vulnerabilityCount: 0,
     incidentCount: 0,
     patchLevel: "Latest",
@@ -124,14 +121,7 @@ async function createAsset(body) {
 
   const savedAsset = await asset.save();
 
-  try {
-    const io = getIO();
-    if (io) {
-      io.emit("asset:created", savedAsset);
-    }
-  } catch (socketErr) {
-    console.warn("[assetService] Failed to emit asset:created:", socketErr.message);
-  }
+  emitToRoles(["ADMIN", "ITSM"], "asset:created", savedAsset);
 
   return savedAsset;
 }
@@ -144,32 +134,26 @@ async function updateAsset(id, body) {
     throw err;
   }
 
-  if (body.assetName) asset.assetName = body.assetName;
-  if (body.description) asset.description = body.description;
+  // Whitelist safe editable fields
+  if (body.assetName) asset.assetName = body.assetName.trim();
+  if (body.description != null) asset.description = body.description;
   if (body.assetType) asset.assetType = body.assetType;
-  if (body.owner) {
+  if (body.owner != null) {
     asset.owner = body.owner;
     asset.assignedUser = body.owner;
   }
-  if (body.department) {
+  if (body.department != null) {
     asset.department = body.department;
     asset.assignedDepartment = body.department;
   }
-  if (body.location) asset.location = body.location;
-  if (body.status) asset.status = body.status;
-  if (body.health) asset.health = body.health;
-  if (body.riskScore != null) asset.riskScore = body.riskScore;
+  if (body.location != null) asset.location = body.location;
+  if (body.status != null) asset.status = body.status;
+  if (body.health != null) asset.health = body.health;
+  if (body.riskScore != null) asset.riskScore = Math.max(0, Math.min(100, Number(body.riskScore)));
 
   const updatedAsset = await asset.save();
 
-  try {
-    const io = getIO();
-    if (io) {
-      io.emit("asset:updated", updatedAsset);
-    }
-  } catch (socketErr) {
-    console.warn("[assetService] Failed to emit asset:updated:", socketErr.message);
-  }
+  emitToRoles(["ADMIN", "ITSM"], "asset:updated", updatedAsset);
 
   return updatedAsset;
 }
@@ -191,5 +175,4 @@ module.exports = {
   createAsset,
   updateAsset,
   deleteAsset,
-  escapeRegex,
 };

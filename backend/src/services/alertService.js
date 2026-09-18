@@ -1,5 +1,5 @@
 const Alert = require("../models/Alert");
-const { getIO } = require("../socket");
+const { emitToRoles } = require("../socket");
 
 async function getAlerts({ page = 1, limit = 20, severity, status, category }) {
   page = Math.max(1, parseInt(page, 10) || 1);
@@ -53,14 +53,7 @@ async function createAlert(alertData) {
     source: alertData.source || "SentinelCore",
   });
 
-  try {
-    const io = getIO();
-    if (io) {
-      io.emit("alert:created", newAlert);
-    }
-  } catch (socketErr) {
-    console.warn("[alertService] Failed to emit alert:created:", socketErr.message);
-  }
+  emitToRoles(["ADMIN", "ITSM"], "alert:created", newAlert);
 
   return newAlert;
 }
@@ -86,18 +79,13 @@ async function updateAlertStatus(id, newStatus, user) {
     alert.acknowledgedAt = now;
   } else if (newStatus === "RESOLVED") {
     alert.resolvedAt = now;
+  } else if (newStatus === "OPEN") {
+    alert.resolvedAt = null;
   }
 
   const updatedAlert = await alert.save();
 
-  try {
-    const io = getIO();
-    if (io) {
-      io.emit("alert:updated", updatedAlert);
-    }
-  } catch (socketErr) {
-    console.warn("[alertService] Failed to emit alert:updated:", socketErr.message);
-  }
+  emitToRoles(["ADMIN", "ITSM"], "alert:updated", updatedAlert);
 
   return updatedAlert;
 }

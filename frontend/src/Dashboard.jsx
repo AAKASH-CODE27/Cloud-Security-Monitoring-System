@@ -157,6 +157,17 @@ function Dashboard() {
 
   };
 
+  const formatUptime = (seconds) => {
+    const sec = toNumber(seconds, 0);
+    if (sec <= 0) return "Active";
+    const d = Math.floor(sec / 86400);
+    const h = Math.floor((sec % 86400) / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    if (d > 0) return `${d}d ${h}h`;
+    if (h > 0) return `${h}h ${m}m`;
+    return `${m}m`;
+  };
+
   /* =====================================================
       PROFILE
   ===================================================== */
@@ -1097,9 +1108,9 @@ function Dashboard() {
     );
 
   const securityScoreValue =
-    clampPercentage(
-      dashboard.securityScore
-    );
+    dashboard.securityScore === null || dashboard.securityScore === undefined
+      ? null
+      : clampPercentage(dashboard.securityScore);
 
   /* =====================================================
       REAL ALERT COUNT
@@ -1257,9 +1268,7 @@ function Dashboard() {
             <div>
 
               <h2>
-
-                {securityScoreValue}%
-
+                {securityScoreValue !== null ? `${securityScoreValue}%` : "Unavailable"}
               </h2>
 
               <span>
@@ -1353,11 +1362,8 @@ function Dashboard() {
             },
 
             {
-              title: "Uptime",
-              value:
-                `${toNumber(
-                  dashboard.uptime
-                )}%`,
+              title: "Host Uptime",
+              value: formatUptime(dashboard.uptime),
               icon:
                 <FaClock />,
               color:

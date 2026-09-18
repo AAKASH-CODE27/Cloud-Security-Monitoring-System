@@ -18,6 +18,13 @@ const {
   getAssetsByStatus,
   getAssetsByHealth,
 } = require("../controllers/assetController");
+const { createRateLimiter } = require("../middleware/rateLimiter");
+
+const netScanLimiter = createRateLimiter({
+  windowMs: 5 * 60 * 1000,
+  maxRequests: 10,
+  message: "Too many network scanning requests. Please wait a few minutes before retrying.",
+});
 
 // Every route below requires a valid JWT
 router.use(authenticate);
@@ -32,11 +39,12 @@ router.use(authenticate);
 router.get(
   "/discover",
   authorize("ADMIN", "ITSM"),
+  netScanLimiter,
   asyncHandler(discoverAssets)
 );
 
 // GET /api/assets/scan?subnet=192.168.1
-router.get("/scan", authorize("ADMIN", "ITSM"), asyncHandler(scanNetwork));
+router.get("/scan", authorize("ADMIN", "ITSM"), netScanLimiter, asyncHandler(scanNetwork));
 
 // GET /api/assets/search?keyword=...
 router.get(

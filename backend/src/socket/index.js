@@ -90,4 +90,26 @@ function getIO() {
   return io;
 }
 
-module.exports = { initSocket, getIO };
+/**
+ * Emit event to specific role rooms (e.g. ["ADMIN", "ITSM"])
+ * Prevents information leakage to unprivileged USER sockets
+ */
+function emitToRoles(roles, event, data) {
+  if (!io) return;
+  const roleList = Array.isArray(roles) ? roles : [roles];
+  let target = io;
+  roleList.forEach((role) => {
+    target = target.to(`role:${role}`);
+  });
+  target.emit(event, data);
+}
+
+/**
+ * Emit event to a specific user's private room
+ */
+function emitToUser(userId, event, data) {
+  if (!io || !userId) return;
+  io.to(`user:${userId}`).emit(event, data);
+}
+
+module.exports = { initSocket, getIO, emitToRoles, emitToUser };

@@ -2,44 +2,43 @@ const Asset = require("../models/Asset");
 const SecurityEvent = require("../models/SecurityEvent");
 const Alert = require("../models/Alert");
 const stats = require("../utils/systemStats");
-const { getIO } = require("../socket");
+const { emitToRoles } = require("../socket");
 
 async function discoverLocalAsset() {
   const snapshot = await stats.getFullSnapshot();
   const currentIp = snapshot.ipAddress || stats.getIPAddress();
   const hostname = snapshot.hostname;
+  const mac = snapshot.macAddress;
 
-  // Search for existing asset by IP or Hostname
-  let asset = await Asset.findOne({
-    $or: [{ ipAddress: currentIp }, { hostname }],
-  });
+  // Search for existing asset by MAC, IP, or Hostname
+  const searchOr = [{ hostname }];
+  if (currentIp) searchOr.push({ ipAddress: currentIp });
+  if (mac && mac !== "00:00:00:00:00:00") searchOr.push({ macAddress: mac });
+
+  let asset = await Asset.findOne({ $or: searchOr });
 
   const now = new Date();
-  const io = getIO();
   let isNew = false;
   let prevHealth = null;
 
   if (asset) {
     prevHealth = asset.health;
-    // Update existing asset with REAL live metrics
     asset.cpuUsage = snapshot.cpuUsage;
     asset.memoryUsage = snapshot.memoryUsage;
     asset.diskUsage = snapshot.diskUsage;
     asset.networkUsage = snapshot.networkUsage;
     asset.health = snapshot.health;
-    asset.riskScore = snapshot.riskScore;
     asset.lastSeen = now;
     asset.lastScan = now;
 
     await asset.save();
 
-    // Avoid spamming: emit only if health changed
-    if (io && prevHealth !== snapshot.health) {
-      io.emit("asset:updated", asset);
+    // Avoid spamming: emit only if health state changed
+    if (prevHealth !== snapshot.health) {
+      emitToRoles(["ADMIN", "ITSM"], "asset:updated", asset);
     }
   } else {
     isNew = true;
-    // Create new asset with REAL live metrics
     asset = await Asset.create({
       assetName: hostname,
       description: "Automatically discovered host workstation",
@@ -78,9 +77,9 @@ async function discoverLocalAsset() {
       gpuUsage: snapshot.gpuUsage,
 
       status: "ACTIVE",
-      health: snapshot.health,
-      riskScore: snapshot.riskScore,
-      availability: 99.99,
+      health: snapshot.health || "Healthy",
+      riskScore: 0,
+      availability: 100.0,
       vulnerabilityCount: 0,
       incidentCount: 0,
       patchLevel: "Latest",
@@ -93,11 +92,8 @@ async function discoverLocalAsset() {
       discoveredAt: now,
     });
 
-    if (io) {
-      io.emit("asset:discovered", asset);
-    }
+    emitToRoles(["ADMIN", "ITSM"], "asset:discovered", asset);
 
-    // Log security event for newly discovered asset
     const secEvent = await SecurityEvent.create({
       asset: asset.assetName,
       assetId: asset._id,
@@ -107,9 +103,7 @@ async function discoverLocalAsset() {
       source: "Asset Discovery",
     });
 
-    if (io) {
-      io.emit("security:event", secEvent);
-    }
+    emitToRoles(["ADMIN", "ITSM"], "security:event", secEvent);
   }
 
   // Generate security alerts/events if resource usage is dangerously high
@@ -135,10 +129,8 @@ async function discoverLocalAsset() {
       source: "Auto Discovery Monitor",
     });
 
-    if (io) {
-      io.emit("security:event", criticalEvent);
-      io.emit("alert:created", criticalAlert);
-    }
+    emitToRoles(["ADMIN", "ITSM"], "security:event", criticalEvent);
+    emitToRoles(["ADMIN", "ITSM"], "alert:created", criticalAlert);
   } else if (snapshot.health === "Warning" && (isNew || prevHealth !== "Warning")) {
     const warningEvent = await SecurityEvent.create({
       asset: asset.assetName,
@@ -149,9 +141,7 @@ async function discoverLocalAsset() {
       source: "Health Check",
     });
 
-    if (io) {
-      io.emit("security:event", warningEvent);
-    }
+    emitToRoles(["ADMIN", "ITSM"], "security:event", warningEvent);
   }
 
   return asset;

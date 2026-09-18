@@ -1,4 +1,3 @@
-const bcrypt = require("bcryptjs");
 const User = require("../models/User");
 
 async function getAllUsers() {
@@ -30,27 +29,31 @@ async function updateUser(id, updateData, requestingUser) {
       err.statusCode = 403;
       throw err;
     }
-    delete updateData.role; // Prevent self-role elevation
+    delete updateData.role;
+    delete updateData.status;
   }
 
-  if (updateData.username) user.username = updateData.username;
-  if (updateData.email) user.email = updateData.email.toLowerCase();
-  if (updateData.department) user.department = updateData.department;
-  if (updateData.phone) user.phone = updateData.phone;
-  if (updateData.designation) user.designation = updateData.designation;
-  if (updateData.address) user.address = updateData.address;
-  if (updateData.bio) user.bio = updateData.bio;
-  if (updateData.employeeId) user.employeeId = updateData.employeeId;
+  // Whitelist safe profile fields (never silently overwrite password in generic update)
+  if (updateData.username) user.username = updateData.username.trim();
+  if (updateData.email) user.email = updateData.email.toLowerCase().trim();
+  if (updateData.department != null) user.department = updateData.department.trim();
+  if (updateData.phone != null) user.phone = updateData.phone;
+  if (updateData.designation != null) user.designation = updateData.designation;
+  if (updateData.address != null) user.address = updateData.address;
+  if (updateData.bio != null) user.bio = updateData.bio;
+  if (updateData.employeeId != null) user.employeeId = updateData.employeeId;
 
-  if (requestingUser.role === "ADMIN" && updateData.role) {
-    const validRoles = ["ADMIN", "ITSM", "USER"];
-    if (validRoles.includes(updateData.role)) {
-      user.role = updateData.role;
+  // Administrative modifications
+  if (requestingUser.role === "ADMIN") {
+    if (updateData.role) {
+      const validRoles = ["ADMIN", "ITSM", "USER"];
+      if (validRoles.includes(updateData.role)) {
+        user.role = updateData.role;
+      }
     }
-  }
-
-  if (updateData.password && updateData.password.trim() !== "") {
-    user.password = await bcrypt.hash(updateData.password, 10);
+    if (updateData.status) {
+      user.status = updateData.status;
+    }
   }
 
   const updated = await user.save();
@@ -70,6 +73,13 @@ async function deleteUser(id, requestingUser) {
   if (!user) {
     const err = new Error("User not found");
     err.statusCode = 404;
+    throw err;
+  }
+
+  // Prevent admin from deleting their own account
+  if (String(requestingUser._id) === String(user._id)) {
+    const err = new Error("Bad Request: Cannot delete your own administrative account.");
+    err.statusCode = 400;
     throw err;
   }
 

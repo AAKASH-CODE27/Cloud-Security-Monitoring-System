@@ -1,12 +1,17 @@
-const rateLimitMap = new Map();
-
 /**
  * Lightweight in-memory rate limiter middleware.
+ * Each limiter instance maintains its own tracking map.
  * @param {Object} options - { windowMs, maxRequests, message }
  */
-function createRateLimiter({ windowMs = 15 * 60 * 1000, maxRequests = 10, message = "Too many requests. Please try again later." }) {
+function createRateLimiter({
+  windowMs = 15 * 60 * 1000,
+  maxRequests = 10,
+  message = "Too many requests. Please try again later.",
+}) {
+  const rateLimitMap = new Map();
+
   return (req, res, next) => {
-    const ip = req.ip || req.headers["x-forwarded-for"] || req.socket.remoteAddress || "global";
+    const ip = req.ip || req.headers["x-forwarded-for"] || req.socket?.remoteAddress || "global";
     const now = Date.now();
 
     if (!rateLimitMap.has(ip)) {
