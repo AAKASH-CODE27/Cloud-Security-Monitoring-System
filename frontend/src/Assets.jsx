@@ -126,7 +126,7 @@ export default function Assets() {
 
       if (editingAsset) {
 
-        await updateAsset(editingAsset.id, asset);
+        await updateAsset(editingAsset.id || editingAsset._id, asset);
 
         toast.success("Asset updated successfully.");
 

@@ -525,7 +525,7 @@ export const formatAssetForReport = (
   return {
 
     ID:
-      asset.id ?? "-",
+      asset.id || asset._id || "-",
 
     Name:
       asset.assetName ||

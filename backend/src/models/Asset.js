@@ -99,6 +99,8 @@ const assetSchema = new mongoose.Schema(
     // createdAt / updatedAt handled automatically, mirroring
     // Asset.java's createdAt/updatedAt fields
     timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
   }
 );
 

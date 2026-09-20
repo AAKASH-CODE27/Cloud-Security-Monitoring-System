@@ -304,7 +304,8 @@ async function getFullSnapshot() {
     memoryUsage,
     diskUsage,
     networkUsage: network.usageMB,
-    gpuUsage: 35, // hardcoded in the original app too
+    // GPU telemetry placeholder (cross-platform GPU hardware monitoring not attached)
+    gpuUsage: 0,
 
     health,
     riskScore,

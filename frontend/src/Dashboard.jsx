@@ -340,11 +340,13 @@ function Dashboard() {
       assetList.forEach(
         (asset) => {
 
+          const aId = asset.id || asset._id;
+
           const assetName =
             asset.assetName ||
             asset.hostname ||
             asset.name ||
-            `Asset ${asset.id}`;
+            `Asset ${aId}`;
 
           /* ==========================================
               CRITICAL HEALTH
@@ -359,10 +361,10 @@ function Dashboard() {
             generatedAlerts.push({
 
               id:
-                `health-${asset.id}`,
+                `health-${aId}`,
 
               assetId:
-                asset.id,
+                aId,
 
               assetName,
 
@@ -395,10 +397,10 @@ function Dashboard() {
             generatedAlerts.push({
 
               id:
-                `status-${asset.id}`,
+                `status-${aId}`,
 
               assetId:
-                asset.id,
+                aId,
 
               assetName,
 
@@ -434,10 +436,10 @@ function Dashboard() {
             generatedAlerts.push({
 
               id:
-                `risk-${asset.id}`,
+                `risk-${aId}`,
 
               assetId:
-                asset.id,
+                aId,
 
               assetName,
 
@@ -462,10 +464,10 @@ function Dashboard() {
             generatedAlerts.push({
 
               id:
-                `risk-${asset.id}`,
+                `risk-${aId}`,
 
               assetId:
-                asset.id,
+                aId,
 
               assetName,
 

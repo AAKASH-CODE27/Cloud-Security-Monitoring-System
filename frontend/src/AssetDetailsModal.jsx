@@ -22,7 +22,7 @@ function AssetDetailsModal({ asset, onClose }) {
 
           <div className="detail-row">
             <span>ID</span>
-            <strong>{asset.id}</strong>
+            <strong>{asset.id || asset._id}</strong>
           </div>
 
           <div className="detail-row">

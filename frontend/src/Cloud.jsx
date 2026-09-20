@@ -71,48 +71,52 @@ export default function Cloud() {
   // ===============================
 
   const generateCloudResources = (assetList) => {
-    const generated = assetList.map((asset) => ({
-      id: asset.id,
+    const generated = assetList.map((asset) => {
+      const aId = asset.id || asset._id;
+      return {
 
-      provider:
-        asset.cloudProvider ||
-        asset.provider ||
-        "AWS",
+        id: aId,
 
-      name:
-        asset.name ||
-        asset.assetName ||
-        asset.hostname ||
-        `Asset ${asset.id}`,
+        provider:
+          asset.cloudProvider ||
+          asset.provider ||
+          "AWS",
 
-      region:
-        asset.region ||
-        "ap-south-1",
+        name:
+          asset.name ||
+          asset.assetName ||
+          asset.hostname ||
+          `Asset ${aId}`,
 
-      cpu:
-        asset.cpuUsage ??
-        asset.cpu ??
-        Math.floor(Math.random() * 90),
+        region:
+          asset.region ||
+          "ap-south-1",
 
-      memory:
-        asset.memoryUsage ??
-        asset.memory ??
-        Math.floor(Math.random() * 90),
+        cpu:
+          asset.cpuUsage ??
+          asset.cpu ??
+          Math.floor(Math.random() * 90),
 
-      disk:
-        asset.diskUsage ??
-        asset.disk ??
-        Math.floor(Math.random() * 90),
+        memory:
+          asset.memoryUsage ??
+          asset.memory ??
+          Math.floor(Math.random() * 90),
 
-      health:
-        asset.health || "Healthy",
+        disk:
+          asset.diskUsage ??
+          asset.disk ??
+          Math.floor(Math.random() * 90),
 
-      kubernetes:
-        asset.kubernetes ?? false,
+        health:
+          asset.health || "Healthy",
 
-      docker:
-        asset.docker ?? false,
-    }));
+        kubernetes:
+          asset.kubernetes ?? false,
+
+        docker:
+          asset.docker ?? false,
+      };
+    });
 
     setResources(generated);
   };
@@ -162,7 +166,7 @@ export default function Cloud() {
 
     toast.success("Cloud resources refreshed");
   };
-    // ===============================
+  // ===============================
   // Search & Filter
   // ===============================
 
@@ -261,11 +265,11 @@ export default function Cloud() {
       value:
         filteredResources.length > 0
           ? Math.round(
-              filteredResources.reduce(
-                (sum, item) => sum + Number(item.cpu || 0),
-                0
-              ) / filteredResources.length
-            )
+            filteredResources.reduce(
+              (sum, item) => sum + Number(item.cpu || 0),
+              0
+            ) / filteredResources.length
+          )
           : 0,
     },
     {
@@ -273,11 +277,11 @@ export default function Cloud() {
       value:
         filteredResources.length > 0
           ? Math.round(
-              filteredResources.reduce(
-                (sum, item) => sum + Number(item.memory || 0),
-                0
-              ) / filteredResources.length
-            )
+            filteredResources.reduce(
+              (sum, item) => sum + Number(item.memory || 0),
+              0
+            ) / filteredResources.length
+          )
           : 0,
     },
     {
@@ -285,11 +289,11 @@ export default function Cloud() {
       value:
         filteredResources.length > 0
           ? Math.round(
-              filteredResources.reduce(
-                (sum, item) => sum + Number(item.disk || 0),
-                0
-              ) / filteredResources.length
-            )
+            filteredResources.reduce(
+              (sum, item) => sum + Number(item.disk || 0),
+              0
+            ) / filteredResources.length
+          )
           : 0,
     },
   ];
@@ -307,7 +311,7 @@ export default function Cloud() {
     (page - 1) * pageSize,
     page * pageSize
   );
-    // ===============================
+  // ===============================
   // UI
   // ===============================
 
@@ -567,7 +571,7 @@ export default function Cloud() {
             </motion.div>
 
           </div>
-                    {/* ================= Loading ================= */}
+          {/* ================= Loading ================= */}
 
           {loading && (
             <div className="loading">
@@ -759,7 +763,7 @@ export default function Cloud() {
 
               </motion.div>
 
-          )}
+            )}
 
           {/* ================= Pagination ================= */}
 
@@ -773,7 +777,7 @@ export default function Cloud() {
                 onPageChange={setPage}
               />
 
-          )}
+            )}
 
         </motion.div>
 

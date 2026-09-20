@@ -99,7 +99,7 @@ function Reports() {
     return assets.map((asset) => ({
       ...asset,
 
-      id: asset.id,
+      id: asset.id || asset._id,
 
       // AssetForm -> Report
       name: asset.assetName || asset.name || "-",
