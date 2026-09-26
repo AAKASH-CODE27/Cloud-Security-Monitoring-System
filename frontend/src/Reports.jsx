@@ -71,7 +71,9 @@ function Reports() {
 
       const response = await getAssets();
 
-      const data = Array.isArray(response?.data)
+      const data = Array.isArray(response?.data?.data)
+        ? response.data.data
+        : Array.isArray(response?.data)
         ? response.data
         : [];
 

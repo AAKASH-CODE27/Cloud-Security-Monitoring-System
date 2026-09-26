@@ -11,7 +11,6 @@ const { calculateSecurityScore } = require("./riskService");
 
 async function getDashboardSummary() {
   const snapshot = await stats.getFullSnapshot();
-  const network = await stats.getNetworkUsage();
   const totalMemGB = Math.round(os.totalmem() / 1024 / 1024 / 1024);
 
   const [
@@ -116,8 +115,8 @@ async function getDashboardSummary() {
     gpu: snapshot.gpuUsage || 0,
     database: isDbConnected,
 
-    upload: network.uploadMB,
-    download: network.downloadMB,
+    upload: snapshot.networkUsage?.uploadMB || 0,
+    download: snapshot.networkUsage?.downloadMB || 0,
 
     // Real measured host uptime in seconds (frontend can format as days/hours)
     uptime: hostUptimeSeconds,

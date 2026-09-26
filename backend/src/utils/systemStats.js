@@ -266,16 +266,45 @@ function computeRiskScore(cpuUsage, memoryUsage, diskUsage, networkUsage, health
 // and updateAsset() gather about the host machine
 // =====================================================
 
-async function getFullSnapshot() {
-  const cpuInfo = await getCpuInfo();
-  const cpuUsage = await getCpuUsage();
-  const memoryUsage = await getMemoryUsage();
-  const diskUsage = await getDiskUsage();
-  const network = await getNetworkUsage();
-  const osInfo = getOsInfo();
-  const wifiName = await getWifiSSID();
-  const gateway = await getGateway();
+let cachedSnapshot = null;
+let lastSnapshotTime = 0;
+const SNAPSHOT_CACHE_TTL_MS = 3000;
 
+function withTimeout(promise, ms, fallback) {
+  let timer = null;
+  const timeoutPromise = new Promise((resolve) => {
+    timer = setTimeout(() => resolve(fallback), ms);
+  });
+  return Promise.race([promise, timeoutPromise]).finally(() => {
+    if (timer) clearTimeout(timer);
+  });
+}
+
+async function getFullSnapshot() {
+  const now = Date.now();
+  if (cachedSnapshot && now - lastSnapshotTime < SNAPSHOT_CACHE_TTL_MS) {
+    return cachedSnapshot;
+  }
+
+  const [
+    cpuInfo,
+    cpuUsage,
+    memoryUsage,
+    diskUsage,
+    network,
+    wifiName,
+    gateway,
+  ] = await Promise.all([
+    withTimeout(getCpuInfo(), 2500, { processor: "Unknown", cores: os.cpus().length }),
+    withTimeout(getCpuUsage(), 2500, 0),
+    withTimeout(getMemoryUsage(), 2500, 0),
+    withTimeout(getDiskUsage(), 2500, 0),
+    withTimeout(getNetworkUsage(), 2500, { usageMB: 0, uploadMB: 0, downloadMB: 0 }),
+    withTimeout(getWifiSSID(), 2500, "Unsupported"),
+    withTimeout(getGateway(), 2500, "Unknown"),
+  ]);
+
+  const osInfo = getOsInfo();
   const health = computeHealth(cpuUsage, memoryUsage, diskUsage);
   const riskScore = computeRiskScore(
     cpuUsage,
@@ -285,7 +314,7 @@ async function getFullSnapshot() {
     health
   );
 
-  return {
+  cachedSnapshot = {
     hostname: getHostName(),
     ipAddress: getIPAddress(),
     macAddress: getMacAddress(),
@@ -310,6 +339,9 @@ async function getFullSnapshot() {
     health,
     riskScore,
   };
+
+  lastSnapshotTime = now;
+  return cachedSnapshot;
 }
 
 module.exports = {

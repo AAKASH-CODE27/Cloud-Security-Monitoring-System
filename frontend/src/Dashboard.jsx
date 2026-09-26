@@ -287,6 +287,11 @@ function Dashboard() {
   const loadUsers =
     async () => {
 
+      const userRole = (profile?.role || localStorage.getItem("role") || "").toUpperCase();
+      if (userRole !== "ADMIN") {
+        return [];
+      }
+
       try {
 
         const response =
@@ -338,9 +343,9 @@ function Dashboard() {
       }
 
       assetList.forEach(
-        (asset) => {
+        (asset, idx) => {
 
-          const aId = asset.id || asset._id;
+          const aId = asset.id || asset._id || asset.ipAddress || asset.hostname || idx;
 
           const assetName =
             asset.assetName ||

@@ -28,7 +28,16 @@ function Alerts() {
         getAlerts({ limit: 50 }),
       ]);
 
-      const assetData = assetsRes.status === "fulfilled" ? assetsRes.value?.data || [] : [];
+      // const assetData = assetsRes.status === "fulfilled" ? assetsRes.value?.data || [] : [];
+      const assetResponse = assetsRes.status === "fulfilled"
+        ? assetsRes.value?.data
+        : [];
+
+      const assetData = Array.isArray(assetResponse)
+        ? assetResponse
+        : Array.isArray(assetResponse?.data)
+          ? assetResponse.data
+          : [];
       const backendAlerts =
         alertsRes.status === "fulfilled"
           ? alertsRes.value?.data?.data || alertsRes.value?.data || []
@@ -133,7 +142,7 @@ function Alerts() {
         type: newAlert.category || "Security",
         severity:
           newAlert.severity?.charAt(0).toUpperCase() +
-            newAlert.severity?.slice(1).toLowerCase() || "Medium",
+          newAlert.severity?.slice(1).toLowerCase() || "Medium",
         status: newAlert.status || "OPEN",
         description: newAlert.description || newAlert.title,
       };
@@ -147,12 +156,12 @@ function Alerts() {
         prev.map((a) =>
           a.id === updatedAlert._id || a.id === updatedAlert.id
             ? {
-                ...a,
-                status: updatedAlert.status,
-                severity:
-                  updatedAlert.severity?.charAt(0).toUpperCase() +
-                    updatedAlert.severity?.slice(1).toLowerCase() || a.severity,
-              }
+              ...a,
+              status: updatedAlert.status,
+              severity:
+                updatedAlert.severity?.charAt(0).toUpperCase() +
+                updatedAlert.severity?.slice(1).toLowerCase() || a.severity,
+            }
             : a
         )
       );
