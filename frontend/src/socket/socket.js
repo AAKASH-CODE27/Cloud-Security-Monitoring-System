@@ -36,8 +36,10 @@ export function getSocket(token) {
       reconnectionDelay: 1000,
       transports: ["websocket", "polling"],
     });
-  } else {
+  } else if (socketInstance.auth.token !== token) {
+    socketInstance.disconnect();
     socketInstance.auth = { token };
+    socketInstance.connect();
   }
 
   return socketInstance;

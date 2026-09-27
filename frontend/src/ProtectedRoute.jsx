@@ -1,4 +1,5 @@
 import { Navigate } from "react-router-dom";
+import { createPortal } from "react-dom";
 import { useAuth } from "./AuthContext";
 
 export default function ProtectedRoute({
@@ -9,25 +10,35 @@ export default function ProtectedRoute({
 
   // Loading
   if (loading) {
-    return (
+    return createPortal(
       <div
         style={{
-          background: "#0b1120",
-          color: "#ffffff",
-          height: "100vh",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          flexDirection: "column",
-          fontSize: "22px",
+          position: "fixed",
+          inset: 0,
+          backgroundColor: "var(--bg, #1E242A)",
+          zIndex: 99999
         }}
       >
-        <div className="loader"></div>
-
-        <p style={{ marginTop: "20px" }}>
-          Loading SecureOps...
-        </p>
-      </div>
+        <div
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "16px",
+            color: "var(--text-2, #B7C0C8)"
+          }}
+        >
+          <div className="loader"></div>
+          <p style={{ marginTop: "0", fontSize: "14px", fontWeight: 500 }}>
+            Loading SecureOps...
+          </p>
+        </div>
+      </div>,
+      document.body
     );
   }
 

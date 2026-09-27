@@ -133,7 +133,8 @@ export default function Cloud() {
 
       const response = await getAssets();
 
-      const assetData = response?.data || [];
+      const assetList = response?.data?.data || response?.data || [];
+      const assetData = Array.isArray(assetList) ? assetList : [];
 
       setAssets(assetData);
 

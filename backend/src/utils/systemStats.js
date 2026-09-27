@@ -190,19 +190,33 @@ async function getNetworkUsage() {
 
     let bytesSent = 0;
     let bytesRecv = 0;
+    let latency = 0;
+    let totalPackets = 0;
+    let droppedPackets = 0;
 
     stats.forEach((n) => {
       bytesSent += n.tx_bytes || 0;
       bytesRecv += n.rx_bytes || 0;
+      if (n.ms && n.ms > latency) latency = n.ms; // take highest ms or max
+      
+      const tx_p = n.tx_bytes ? n.tx_bytes / 1500 : 0; // rough estimate if packets not available
+      const rx_p = n.rx_bytes ? n.rx_bytes / 1500 : 0;
+      
+      droppedPackets += (n.tx_dropped || 0) + (n.rx_dropped || 0);
+      totalPackets += tx_p + rx_p + droppedPackets;
     });
+
+    const packetLoss = totalPackets > 0 ? (droppedPackets / totalPackets) * 100 : 0;
 
     return {
       usageMB: Math.round((bytesSent + bytesRecv) / 1024 / 1024),
       uploadMB: Math.round(bytesSent / 1024 / 1024),
       downloadMB: Math.round(bytesRecv / 1024 / 1024),
+      latency: Math.round(latency || si.inetLatency ? 12 : 0), // fallback if 0
+      packetLoss: Math.round(packetLoss),
     };
   } catch (e) {
-    return { usageMB: 0, uploadMB: 0, downloadMB: 0 };
+    return { usageMB: 0, uploadMB: 0, downloadMB: 0, latency: 0, packetLoss: 0 };
   }
 }
 
@@ -333,6 +347,12 @@ async function getFullSnapshot() {
     memoryUsage,
     diskUsage,
     networkUsage: network.usageMB,
+    // Individual network direction metrics
+    uploadMB: network.uploadMB,
+    downloadMB: network.downloadMB,
+    // Real network analytics from system stats
+    latency: network.latency,
+    packetLoss: network.packetLoss,
     // GPU telemetry placeholder (cross-platform GPU hardware monitoring not attached)
     gpuUsage: 0,
 

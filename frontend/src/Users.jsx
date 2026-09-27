@@ -946,7 +946,7 @@ export default function Users() {
                       (user) => (
 
                         <tr
-                          key={user.id}
+                          key={user._id || user.id}
                         >
 
                           <td>

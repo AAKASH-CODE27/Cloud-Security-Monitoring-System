@@ -115,8 +115,12 @@ async function getDashboardSummary() {
     gpu: snapshot.gpuUsage || 0,
     database: isDbConnected,
 
-    upload: snapshot.networkUsage?.uploadMB || 0,
-    download: snapshot.networkUsage?.downloadMB || 0,
+    // Network direction metrics (cumulative bytes from systeminformation)
+    upload: snapshot.uploadMB,
+    download: snapshot.downloadMB,
+    // Latency and packet loss are not measured on the backend host — front-end will display N/A
+    latency: snapshot.latency,
+    packetLoss: snapshot.packetLoss,
 
     // Real measured host uptime in seconds (frontend can format as days/hours)
     uptime: hostUptimeSeconds,

@@ -95,8 +95,9 @@ function getIO() {
  * Prevents information leakage to unprivileged USER sockets
  */
 function emitToRoles(roles, event, data) {
-  if (!io) return;
-  const roleList = Array.isArray(roles) ? roles : [roles];
+  if (!io || !roles) return;
+  const roleList = (Array.isArray(roles) ? roles : [roles]).filter(Boolean);
+  if (roleList.length === 0) return;
   let target = io;
   roleList.forEach((role) => {
     target = target.to(`role:${role}`);

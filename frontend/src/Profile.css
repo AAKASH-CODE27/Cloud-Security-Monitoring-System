@@ -38,7 +38,7 @@
 
 .profile-page{
 
-    min-height:100vh;
+    flex: 1;
 
     width:100%;
 

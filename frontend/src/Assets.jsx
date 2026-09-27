@@ -238,17 +238,17 @@ export default function Assets() {
 
   const totalAssets = assets.length;
 
- const activeAssets = assets.filter(
+  const activeAssets = assets.filter(
     asset => asset.status?.toLowerCase() === "active"
-).length;
+  ).length;
 
-const inactiveAssets = assets.filter(
+  const inactiveAssets = assets.filter(
     asset => asset.status?.toLowerCase() === "inactive"
-).length;
+  ).length;
 
-const healthyAssets = assets.filter(
+  const healthyAssets = assets.filter(
     asset => asset.health?.toLowerCase() === "healthy"
-).length;
+  ).length;
 
   // ==========================
   // Pagination
@@ -269,7 +269,7 @@ const healthyAssets = assets.filter(
     currentPage * pageSize
 
   );
-    // ==========================
+  // ==========================
   // Refresh
   // ==========================
 
@@ -425,7 +425,7 @@ const healthyAssets = assets.filter(
           </div>
 
           {/* ================= Toolbar ================= */}
-{/* 
+          {/* 
           <div className="toolbar">
 
             <SearchBar
@@ -520,7 +520,7 @@ const healthyAssets = assets.filter(
 
           )}
 
-                    {/* ================= Asset Table ================= */}
+          {/* ================= Asset Table ================= */}
 
           {!loading && !error && filteredAssets.length > 0 && (
 
@@ -630,25 +630,25 @@ const healthyAssets = assets.filter(
 
           {/* ================= Asset Form Modal ================= */}
 
-         {showForm && (
-  <div className="asset-form-overlay">
+          {showForm && (
+            <div className="asset-form-overlay">
 
-    <div className="asset-form-modal">
+              <div className="asset-form-modal">
 
-      <AssetForm
-        key={editingAsset?.id || "new"}
-        asset={editingAsset}
-        onSave={handleSave}
-        onCancel={() => {
-          setEditingAsset(null);
-          setShowForm(false);
-        }}
-      />
+                <AssetForm
+                  key={editingAsset?.id || "new"}
+                  asset={editingAsset}
+                  onSave={handleSave}
+                  onCancel={() => {
+                    setEditingAsset(null);
+                    setShowForm(false);
+                  }}
+                />
 
-    </div>
+              </div>
 
-  </div>
-)}
+            </div>
+          )}
 
         </motion.div>
 

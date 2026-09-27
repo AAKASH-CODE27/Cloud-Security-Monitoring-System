@@ -14,7 +14,7 @@ import {
   FaChevronRight,
 } from "react-icons/fa";
 import { NavLink } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "./AuthContext";
 import "./Dashboard.css";
@@ -23,6 +23,14 @@ function Sidebar() {
   const { user, logout } = useAuth();
 
   const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    if (collapsed) {
+      document.body.classList.add("sidebar-collapsed");
+    } else {
+      document.body.classList.remove("sidebar-collapsed");
+    }
+  }, [collapsed]);
 
   const menu = [
     {
@@ -90,7 +98,7 @@ function Sidebar() {
   return (
     <motion.div
       animate={{
-        width: collapsed ? 90 : 270,
+        width: collapsed ? 90 : 260,
       }}
       transition={{
         duration: 0.3,

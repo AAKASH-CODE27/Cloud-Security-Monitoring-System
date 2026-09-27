@@ -5,6 +5,7 @@ import {
   useMemo,
   useState,
 } from "react";
+import { createPortal } from "react-dom";
 
 import { motion } from "framer-motion";
 
@@ -848,14 +849,14 @@ function Dashboard() {
               0,
 
             latency:
-              backendData.latency ??
-              previous.latency ??
-              0,
+              backendData.latency !== undefined
+                ? backendData.latency
+                : previous.latency,
 
             packetLoss:
-              backendData.packetLoss ??
-              previous.packetLoss ??
-              0,
+              backendData.packetLoss !== undefined
+                ? backendData.packetLoss
+                : previous.packetLoss,
 
             uptime:
               backendData.uptime ??
@@ -1132,25 +1133,36 @@ function Dashboard() {
   ===================================================== */
 
   if (loading) {
-
-    return (
-
+    return createPortal(
       <div
-        className="loading-screen"
+        style={{
+          position: "fixed",
+          inset: 0,
+          backgroundColor: "var(--bg, #1E242A)",
+          zIndex: 99999
+        }}
       >
-
         <div
-          className="loader"
-        />
-
-        <h2>
-          Loading SentinelCore SecureOps...
-        </h2>
-
-      </div>
-
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "16px",
+            color: "var(--text-2, #B7C0C8)"
+          }}
+        >
+          <div className="loader" />
+          <h2 style={{ fontSize: "14px", fontWeight: 500, margin: 0 }}>
+            Loading SentinelCore SecureOps...
+          </h2>
+        </div>
+      </div>,
+      document.body
     );
-
   }
 
   /* =====================================================
@@ -1754,15 +1766,15 @@ function Dashboard() {
                   "metric-card"
               >
 
-                <FaArrowUp />
+                <span style={{ display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", color: "var(--success)" }}>
+                  <FaArrowUp />
+                </span>
 
                 <h3>
 
-                  {toNumber(
-                    dashboard.upload
-                  )}
-
-                  {" "}MB
+                  {dashboard.upload != null
+                    ? `${toNumber(dashboard.upload)} MB`
+                    : "N/A"}
 
                 </h3>
 
@@ -1777,15 +1789,15 @@ function Dashboard() {
                   "metric-card"
               >
 
-                <FaArrowDown />
+                <span style={{ display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", color: "var(--accent)" }}>
+                  <FaArrowDown />
+                </span>
 
                 <h3>
 
-                  {toNumber(
-                    dashboard.download
-                  )}
-
-                  {" "}MB
+                  {dashboard.download != null
+                    ? `${toNumber(dashboard.download)} MB`
+                    : "N/A"}
 
                 </h3>
 
@@ -1800,16 +1812,14 @@ function Dashboard() {
                   "metric-card"
               >
 
-                <FaWifi />
+                <span style={{ display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", color: "var(--muted)" }}>
+                  <FaWifi />
+                </span>
 
                 <h3>
-
-                  {toNumber(
-                    dashboard.latency
-                  )}
-
-                  {" "}ms
-
+                  {dashboard.latency != null
+                    ? `${toNumber(dashboard.latency)} ms`
+                    : "N/A"}
                 </h3>
 
                 <p>
@@ -1823,16 +1833,14 @@ function Dashboard() {
                   "metric-card"
               >
 
-                <FaNetworkWired />
+                <span style={{ display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", color: "var(--muted)" }}>
+                  <FaNetworkWired />
+                </span>
 
                 <h3>
-
-                  {toNumber(
-                    dashboard.packetLoss
-                  )}
-
-                  %
-
+                  {dashboard.packetLoss != null
+                    ? `${toNumber(dashboard.packetLoss)}%`
+                    : "N/A"}
                 </h3>
 
                 <p>
@@ -1952,7 +1960,7 @@ function Dashboard() {
               }}
             >
 
-              <h3>
+              <h3 style={{ color: "var(--text)", fontWeight: "bold" }}>
                 Overall Security Status
               </h3>
 

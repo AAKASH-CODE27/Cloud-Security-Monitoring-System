@@ -4,6 +4,7 @@ import {
   useEffect,
   useState,
 } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import API from "./api/axios";
@@ -145,10 +146,33 @@ export function AuthProvider({ children }) {
   };
 
   if (loading) {
-    return (
-      <div className="auth-loading" style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh", backgroundColor: "#0b0f19", color: "#38bdf8" }}>
-        <h2>Loading SentinelCore SecureOps...</h2>
-      </div>
+    return createPortal(
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          backgroundColor: "var(--bg, #1E242A)",
+          zIndex: 99999
+        }}
+      >
+        <div
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "16px",
+            color: "var(--text-2, #B7C0C8)"
+          }}
+        >
+          <div className="loader" />
+          <h2 style={{ fontSize: "14px", fontWeight: 500, margin: 0 }}>Loading SentinelCore SecureOps...</h2>
+        </div>
+      </div>,
+      document.body
     );
   }
 

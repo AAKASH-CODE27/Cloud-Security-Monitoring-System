@@ -182,179 +182,178 @@ function Navbar() {
 
   };
   return (
-  <>
-    {/* =====================================================
+    <>
+      {/* =====================================================
         NAVBAR
     ====================================================== */}
 
-    <header className="navbar">
+      <header className="navbar">
 
-      {/* ==============================================
+        {/* ==============================================
           LEFT SECTION
       =============================================== */}
 
-      <div className="navbar-left">
+        <div className="navbar-left">
 
-        <h2>
-          🛡 SentinelCore SecureOps
-        </h2>
+          <h2>
+            🛡 SentinelCore SecureOps
+          </h2>
 
-        <p>
-          Enterprise Security Operations Center
-        </p>
-
-      </div>
-
-      {/* ==============================================
-          CENTER SECTION
-      =============================================== */}
-
-      <div className="navbar-center">
-
-        <div className="search-box">
-
-          <SearchBar />
+          <p>
+            Enterprise Security Operations Center
+          </p>
 
         </div>
 
-      </div>
+        {/* ==============================================
+          CENTER SECTION
+      =============================================== */}
 
-      {/* ==============================================
+        <div className="navbar-center">
+
+          <div className="navbar-search-box">
+
+            <SearchBar />
+
+          </div>
+
+        </div>
+
+        {/* ==============================================
           RIGHT SECTION
       =============================================== */}
 
-      <div className="navbar-right">
+        <div className="navbar-right">
 
-        {/* ==========================
+          {/* ==========================
             LIVE CLOCK
         =========================== */}
 
-        <motion.div
+          <motion.div
 
-          className="clock"
+            className="clock"
 
-          whileHover={{
-            scale: 1.05,
-          }}
+            whileHover={{
+              scale: 1.05,
+            }}
 
-        >
+          >
 
-          <div className="clock-time">
+            <div className="clock-time">
 
-            {time.toLocaleTimeString()}
+              {time.toLocaleTimeString()}
 
-          </div>
+            </div>
 
-          <div className="clock-date">
+            <div className="clock-date">
 
-            {time.toLocaleDateString()}
+              {time.toLocaleDateString()}
 
-          </div>
+            </div>
 
-        </motion.div>
+          </motion.div>
 
-        {/* ==========================
+          {/* ==========================
             DARK MODE
         =========================== */}
 
-        <motion.div
+          <motion.div
 
-          className="theme-toggle"
+            className="theme-toggle"
 
-          whileHover={{
-            scale: 1.15,
-          }}
+            whileHover={{
+              scale: 1.15,
+            }}
 
-          whileTap={{
-            scale: 0.9,
-          }}
+            whileTap={{
+              scale: 0.9,
+            }}
 
-          onClick={() =>
-            setDarkMode(!darkMode)
-          }
+            onClick={() =>
+              setDarkMode(!darkMode)
+            }
 
-        >
+          >
 
-          {darkMode ? (
+            {darkMode ? (
 
-            <FaMoon />
+              <FaMoon />
 
-          ) : (
+            ) : (
 
-            <FaSun />
+              <FaSun />
 
-          )}
+            )}
 
-        </motion.div>
+          </motion.div>
 
-       {/* ==============================
+          {/* ==============================
     Notifications
 ================================= */}
-<div
-  className="notification"
-  onClick={() => navigate("/alerts")}
->
-  <FaBell className="bell-icon" />
+          <div
+            className="notification"
+            onClick={() => navigate("/alerts")}
+          >
+            <FaBell className="bell-icon" />
 
-  {notificationCount > 0 && (
-    <span className="notification-badge">
-      {notificationCount > 99 ? "99+" : notificationCount}
-    </span>
-  )}
-</div>
+            {notificationCount > 0 && (
+              <span className="notification-badge">
+                {notificationCount > 99 ? "99+" : notificationCount}
+              </span>
+            )}
+          </div>
 
-        {/* ==========================
+          {/* ==========================
             USER PROFILE
         =========================== */}
 
-        <motion.div
+          <motion.div
 
-          className="profile"
+            className="profile"
 
-          whileHover={{
-            scale: 1.03,
-          }}
+            whileHover={{
+              scale: 1.03,
+            }}
 
-          onClick={toggleProfile}
+            onClick={toggleProfile}
 
-        >
+          >
 
-          <img
+            <img
 
-            src={`https://ui-avatars.com/api/?name=${
-              user?.username || "Admin"
-            }&background=2563eb&color=ffffff&bold=true&size=128`}
+              src={`https://ui-avatars.com/api/?name=${user?.username || "Admin"
+                }&background=2563eb&color=ffffff&bold=true&size=128`}
 
-            alt="Profile"
+              alt="Profile"
 
-          />
+            />
 
-          <div className="profile-info">
+            <div className="profile-info">
 
-            <h4>
+              <h4>
 
-              {user?.username ||
+                {user?.username ||
 
-                "Administrator"}
+                  "Administrator"}
 
-            </h4>
+              </h4>
 
-            <p>
+              <p>
 
-              {user?.role ||
+                {user?.role ||
 
-                "ADMIN"}
+                  "ADMIN"}
 
-            </p>
+              </p>
 
-          </div>
+            </div>
 
-        </motion.div>
+          </motion.div>
 
-      </div>
+        </div>
 
-    </header>
-          {/* =====================================================
+      </header>
+      {/* =====================================================
           NOTIFICATION DROPDOWN
       ====================================================== */}
 
@@ -491,9 +490,9 @@ function Navbar() {
 
                         ? new Date(
 
-                            alert.createdAt
+                          alert.createdAt
 
-                          ).toLocaleString()
+                        ).toLocaleString()
 
                         : "Just now"}
 
@@ -613,7 +612,7 @@ function Navbar() {
             <FaUserCircle />
 
             My Profile */}
-{/* 
+          {/* 
           </button>
 
           <button
